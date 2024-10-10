@@ -1,0 +1,86 @@
+---
+
+#need to improve
+cuda_rpm:
+  - "https://developer.download.nvidia.com/compute/cuda/repos/rhel{{ansible_distribution_major_version}}/x86_64/cuda-nvml-devel-12-0-12.0.76-1.x86_64.rpm"
+
+#need to improve
+cuda_version: 12.0
+
+
+#PMIX
+
+install_pmix: true
+pmix_version: '4.2.9'
+pmix_shasum: '7702e5984970de506e31cda072152ce90fffd0e4'
+pmix_tar_url: "https://github.com/openpmix/openpmix/releases/download/v{{pmix_version}}/pmix-{{pmix_version}}.tar.bz2"
+
+#SLURM
+
+slurm_version: '23.02.7'
+slurm_shasum: ''
+slurm_tar_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
+slurm_source_build_dir: /opt/ansible_slurm_deploy_software-build/slurm/source-build  #where source will be extracted to
+slurm_extracted_dir: "slurm-{{ slurm_version }}" #dir that tar creates
+slurm_compile_prefix_dir: "/opt/slurm/{{ slurm_version }}/{{ ansible_distribution }}/{{ ansible_distribution_major_version }}"
+
+slurm_cluster_name: 'local_cluster'
+slurm_user_uid: '456'
+slurm_user_gid: "{{ slurm_user_uid }}" #keep same as uid
+
+slurm_prefix: "/opt/slurm"
+slurm_source: "{{slurm_prefix}}/source"
+slurm_state_save_dir: "{{slurm_prefix}}/state.save"
+slurm_accounting_dir: "{{slurm_prefix}}/accounting"
+slurm_spool_dir: "/var/spool/slurmd"
+slurm_log_dir: "/var/log/slurm"
+slurm_archive_dir: "{{slurm_prefix}}/archive"
+
+#DATABASE
+database_type: 'mariadb'
+#database_type: 'mysql'
+
+#***** ADVISE REPLACE WITH ENCRYTED IN ../vars/ *****#
+db_root_password: 'password'
+slurmdbd_password: 'password'
+
+general_deps:
+  - autoconf
+  - bzip2
+  - gcc
+  - libtool
+  - lz4
+  - make
+  - python3-PyMySQL #ansible manage DB
+  - tree #not needed by slurm
+  - vim #not needed by slurm
+
+pmix_deps:
+  - libevent
+  - libevent-devel
+
+slurm_deps:
+  - dbus-devel #cgroupv2 alma9
+  - hwloc
+  - hwloc-devel
+  - perl-devel
+  - ucx
+  - ucx-devel
+
+munge_deps:
+  - munge
+  - munge-libs
+  - munge-devel #alma9 crb
+  - rng-tools
+
+mariadb_deps:
+  - mariadb-server
+  - mariadb-devel
+  
+mysql_deps:
+  - mysql-server
+  - mysql-devel
+
+...
+
+

@@ -1,0 +1,153 @@
+---
+
+- block:
+
+    # Set slurm user and group locally on every host if uid/gid given
+  - name: add slurm unix group
+    ansible.builtin.group: 
+      name: slurm 
+      system: false 
+      state: present
+      gid: "{{ slurm_user_uid|default(456) }}"
+
+  - name: add slurm unix user
+    ansible.builtin.user:
+      name: slurm
+      shell: /sbin/nologin
+      createhome: false
+      system: false
+      append: true
+      group: slurm
+      state: present
+      uid: "{{ slurm_user_uid|default(456) }}"
+
+  - name: Create Slurm log directory
+    ansible.builtin.file:
+      state: directory
+      path: "{{ slurm_log_dir }}"
+      mode: 0755
+      owner: slurm
+      group: slurm
+  
+  - name: Create Slurm archive directory
+    ansible.builtin.file:
+      state: directory
+      path: "{{ slurm_archive_dir }}"
+      mode: 0750
+      owner: slurm
+      group: slurm
+   
+  - name: Create Slurm spool directory
+    ansible.builtin.file:
+      state: directory
+      path: "{{ slurm_spool_dir }}"
+      mode: 0755
+      owner: slurm
+      group: slurm
+  
+  - name: Create Slurm state save directory
+    ansible.builtin.file:
+      state: directory
+      path: "{{ slurm_state_save_dir }}"
+      mode: 0755
+      owner: slurm
+      group: slurm
+  
+  - name: "Create {{ slurm_prefix }}/{{ slurm_version }}/etc"
+    ansible.builtin.file:
+      state: directory
+      path: "{{ slurm_prefix }}/{{ slurm_version }}/etc"
+      mode: 0755
+      owner: slurm
+      group: slurm
+   
+      #- name: Verify slurm.conf exists
+      #ansible.builtin.stat:
+      #path:
+      #register: slurm_conf
+
+  - name: Template slurmdbd.conf
+    ansible.builtin.template:
+      src: "slurmdbd.conf.j2"
+      dest: "{{ slurm_prefix }}/{{ slurm_version }}/etc/slurmdbd.conf"
+      owner: slurm
+      group: slurm
+      mode: 0600
+
+  - name: Template slurm.conf
+    ansible.builtin.template:
+      src: "slurm.conf.j2"
+      dest: "{{ slurm_prefix }}/{{ slurm_version }}/etc/slurm.conf"
+      owner: slurm
+      group: slurm
+      mode: 0644
+
+  - name: /opt/slurm/
+    ansible.builtin.file:
+      state: directory
+      path: "{{ item }}"
+      mode: 0700
+      owner: slurm
+      group: slurm
+    loop:
+      - /var/spool/slurmd
+      - /var/spool/slurmctld
+
+  - name: Template slurmdbd systemd file
+    ansible.builtin.template:
+      src: "slurmdbd.service.j2"
+      dest: /usr/lib/systemd/system/slurmdbd.service
+      owner: slurm
+      group: slurm
+      mode: 0644
+    notify: Restart slurmdbd
+  
+  - name: Template slurmctld systemd file
+    ansible.builtin.template:
+      src: "slurmctld.service.j2"
+      dest: /usr/lib/systemd/system/slurmctld.service
+      owner: slurm
+      group: slurm
+      mode: 0644
+    notify: Restart slurmctld
+
+  - name: Template slurmd systemd file
+    ansible.builtin.template:
+      src: "slurmd.service.j2"
+      dest: /usr/lib/systemd/system/slurmd.service
+      owner: slurm
+      group: slurm
+      mode: 0644
+    notify: Restart slurmd
+
+  - name: Ensure slurmdbd daemon running
+    ansible.builtin.systemd:
+      name: "slurmdbd.service"
+      state: started
+      enabled: true
+      daemon_reload: true
+
+  - name: Wait for slurmdbd port to respond
+    ansible.builtin.wait_for:
+      port: 6819
+
+  - name: Ensure slurmctld is running
+    ansible.builtin.systemd:
+      name: "slurmctld.service"
+      state: started
+      enabled: true
+      daemon_reload: true
+
+  - name: Ensure slurmd is running
+    ansible.builtin.systemd:
+      name: "slurmd.service"
+      state: started
+      enabled: true
+      daemon_reload: true
+
+  # LOGROTATE
+
+
+  become: true
+
+...

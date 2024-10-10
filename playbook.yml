@@ -1,0 +1,8 @@
+---
+
+- name: ROLE slurm_deploy
+  hosts: slurm_master
+  roles:
+    - slurm_deploy
+
+...

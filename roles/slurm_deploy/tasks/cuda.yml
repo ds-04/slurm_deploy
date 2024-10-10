@@ -1,0 +1,11 @@
+---
+- block:
+
+  - name: Install cuda_rpm
+    ansible.builtin.dnf:
+      disable_gpg_check: true
+      state: present
+      name: "{{ cuda_rpm }}"
+
+  become: true
+...

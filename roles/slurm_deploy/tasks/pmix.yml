@@ -1,0 +1,73 @@
+---
+
+- block:
+
+  - name: "Create {{ slurm_source_build_dir }}/pmix-{{ pmix_version }}"
+    ansible.builtin.file:
+      path: "{{ slurm_source_build_dir }}/pmix-{{pmix_version}}"
+      state: directory
+      recurse: false
+      owner: root
+      group: root
+      mode: '0700'
+
+  - name: "Grab RC code from /opt/pmix-{{pmix_version}}/bin/pmix_info"
+    ansible.builtin.command: /opt/pmix-{{pmix_version}}/bin/pmix_info
+    register: pmix_info_out
+    ignore_errors: True
+
+  - name: "Download pmix {{ pmix_version }} to {{ slurm_source_build_dir }}"
+    ansible.builtin.get_url:
+      url: "{{ pmix_tar_url }}"
+      dest: "{{ slurm_source_build_dir }}"
+      checksum: sha1:"{{pmix_shasum}}"
+    when: pmix_info_out.rc != 0
+
+  - name: "Extract pmix-{{pmix_version}}.tar.bz2"
+    ansible.builtin.unarchive:
+      src: "{{ slurm_source_build_dir }}/pmix-{{pmix_version}}.tar.bz2"
+      dest: "{{ slurm_source_build_dir }}"
+      remote_src: true
+    register: tar_install #dormant
+    ignore_errors: "{{ ansible_check_mode }}"
+    when: pmix_info_out.rc != 0
+ 
+  - name: "Create {{ slurm_source_build_dir }}/pmix-{{pmix_version}}/build"
+    ansible.builtin.file:
+      path: "{{ slurm_source_build_dir }}/pmix-{{pmix_version}}/build/"
+      state: directory
+      recurse: false
+      owner: root
+      group: root
+      mode: '0700'
+    when: pmix_info_out.rc != 0
+ 
+  # master subdir is used for git, but not tar
+  - name: "Run autogen in {{ slurm_source_build_dir }}/pmix-{{pmix_version}}/"
+    ansible.builtin.shell: "./autogen.pl"
+    args:
+      chdir: "{{ slurm_source_build_dir }}/pmix-{{pmix_version}}/"
+    when: pmix_info_out.rc != 0
+
+  - name: "Run make distclean in {{ slurm_source_build_dir }}/pmix-{{pmix_version}}"
+    ansible.builtin.shell: "make distclean"
+    args:
+      chdir: "{{ slurm_source_build_dir }}/pmix-{{pmix_version}}"
+    ignore_errors: true
+    when: pmix_info_out.rc != 0
+
+  - name: "Run ../configure in {{ slurm_source_build_dir }}/pmix-{{pmix_version}}/build/"
+    ansible.builtin.shell: "../configure --prefix=/opt/pmix-{{pmix_version}}"
+    args:
+      chdir: "{{ slurm_source_build_dir }}/pmix-{{pmix_version}}/build/"
+    when: pmix_info_out.rc != 0
+
+  - name: "Run make all install in {{ slurm_source_build_dir }}/pmix-{{pmix_version}}/build/"
+    ansible.builtin.shell: "make all install"
+    args:
+      chdir: "{{ slurm_source_build_dir }}/pmix-{{pmix_version}}/build/"
+    when: pmix_info_out.rc != 0
+
+  become: true
+
+...

@@ -1,0 +1,54 @@
+---
+
+- ansible.builtin.include_tasks: packages_and_env.yml
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 8
+  tags:
+    - packages_and_env
+
+- ansible.builtin.include_tasks: cuda.yml
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 8
+  tags:
+    - cuda
+
+- ansible.builtin.include_tasks: pmix.yml
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 8
+    - install_pmix
+    - skip_pmix is not defined
+  tags:
+    - pmix
+
+- ansible.builtin.include_tasks: munge.yml
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 8
+  tags:
+    - munge
+
+- ansible.builtin.include_tasks: database.yml
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 8
+  tags:
+    - database
+
+- ansible.builtin.include_tasks: slurm_master.yml
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 8
+  tags:
+    - slurm_master
+
+- ansible.builtin.include_tasks: slurm_post_install.yml
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 8
+  tags:
+    - slurm_post_install
+
+...

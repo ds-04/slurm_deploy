@@ -1,0 +1,123 @@
+---
+
+- block:
+  
+  - name: /opt/slurm/
+    ansible.builtin.file:
+      state: directory
+      path: /opt/slurm/
+      mode: 0755
+      owner: root
+      group: root
+
+  - name: "{{ slurm_source_build_dir }}"
+    ansible.builtin.file:
+      state: directory
+      path: "{{ slurm_source_build_dir }}"
+      mode: 0755
+      owner: root
+      group: root
+
+  - name: "Template temporary file setup_slurmdbd.sh to /tmp"
+    ansible.builtin.template:
+      dest: /tmp/
+      src: setup_slurmdbd.sh
+      owner: root
+      group: root
+      mode: '0700'
+
+  - name: "Run /tmp/setup_slurmdbd.sh"
+    ansible.builtin.shell: /tmp/setup_slurmdbd.sh
+
+  - name: "Remove /tmp/setup_slurmdbd.sh"
+    ansible.builtin.file:
+      path: /tmp/setup_slurmdbd.sh
+      state: absent
+
+  - name: Template slurm_env.sh.j2
+    ansible.builtin.template:
+      dest: /etc/profile.d/slurm_env.sh
+      src: slurm_env.sh.j2
+      owner: root
+      group: root
+      mode: '0655'
+
+  - name: "Grab RC code from shell command: . /etc/profile.d/slurm_env.sh; slurmd --version"
+    ansible.builtin.shell: ". /etc/profile.d/slurm_env.sh; slurmd --version"
+    register: slurm_info_out
+    ignore_errors: True
+
+  - name: "Download {{ slurm_tar_url }}"
+    ansible.builtin.get_url:
+      url: "{{ slurm_tar_url }}"
+      dest: "{{ slurm_source_build_dir }}"
+      mode: '0700'
+    when: 
+      - slurm_info_out.rc != 0 
+      - 'slurm_version | string not in slurm_info_out.stdout'
+
+  - name: "Ensure directory {{ slurm_source_build_dir }}/{{ slurm_version }}/{{ ansible_distribution }}/{{ ansible_distribution_major_version }}"
+    ansible.builtin.file:
+      state: directory
+      path: "{{ slurm_source_build_dir }}/{{ slurm_version }}/{{ ansible_distribution }}/{{ ansible_distribution_major_version }}"
+      mode: 0755
+      owner: root
+      group: root
+    when: 
+      - slurm_info_out.rc != 0 
+      - 'slurm_version | string not in slurm_info_out.stdout'
+
+  - name: "Extract slurm tar into {{ slurm_source_build_dir }}/{{ slurm_version }}/{{ ansible_distribution }}/{{ ansible_distribution_major_version }}"
+    ansible.builtin.unarchive:
+      remote_src: true
+      src: "{{ slurm_source_build_dir }}/slurm-{{ slurm_version }}.tar.bz2"
+      dest: "{{ slurm_source_build_dir }}/{{ slurm_version }}/{{ ansible_distribution }}/{{ ansible_distribution_major_version }}"
+    when: 
+      - slurm_info_out.rc != 0 
+      - 'slurm_version | string not in slurm_info_out.stdout'
+ 
+  - name: "./configure"
+    ansible.builtin.shell: './configure --prefix="{{ slurm_compile_prefix_dir }}" --sysconfdir="/opt/slurm/{{ slurm_version }}/etc" --with-nvml="/usr/local/cuda-{{cuda_version}}/targets/x86_64-linux" --with-pmix="/opt/pmix-{{pmix_version}}" --with-ucx'
+    args:
+      chdir: "{{ slurm_source_build_dir }}/{{ slurm_version }}/{{ ansible_distribution }}/{{ ansible_distribution_major_version }}/{{ slurm_extracted_dir }}"
+    when: 
+      - slurm_info_out.rc != 0 
+      - 'slurm_version | string not in slurm_info_out.stdout'
+
+  - name: "time make -j "
+    ansible.builtin.shell: "time make -j"
+    args:
+      chdir: "{{ slurm_source_build_dir }}/{{ slurm_version }}/{{ ansible_distribution }}/{{ ansible_distribution_major_version }}/{{ slurm_extracted_dir }}"
+    when: 
+      - slurm_info_out.rc != 0 
+      - 'slurm_version | string not in slurm_info_out.stdout'
+
+  - name: "make install -j "
+    ansible.builtin.shell: "make install -j"
+    args:
+      chdir: "{{ slurm_source_build_dir }}/{{ slurm_version }}/{{ ansible_distribution }}/{{ ansible_distribution_major_version }}/{{ slurm_extracted_dir }}"
+    when: 
+      - slurm_info_out.rc != 0 
+      - 'slurm_version | string not in slurm_info_out.stdout'
+
+    # compile pam slurm adopt  
+  - name: "make -j (for pam_slurm_adopt)"
+    ansible.builtin.shell: "make -j DESTDIR=/opt/slurm/{{ slurm_version }}/{{ ansible_distribution }}/{{ ansible_distribution_major_version }}/contribs/pam_slurm_adopt"
+    args:
+      chdir: "{{ slurm_source_build_dir }}/{{ slurm_version }}/{{ ansible_distribution }}/{{ ansible_distribution_major_version }}/{{ slurm_extracted_dir }}/contribs/pam_slurm_adopt"
+    when: 
+      - slurm_info_out.rc != 0 
+      - 'slurm_version | string not in slurm_info_out.stdout'
+
+    # compile pam slurm adopt  
+  - name: "make install -j (for pam_slurm_adopt)"
+    ansible.builtin.shell: "make install -j DESTDIR=/opt/slurm/{{ slurm_version }}/{{ ansible_distribution }}/{{ ansible_distribution_major_version }}/contribs/pam_slurm_adopt"
+    args:
+      chdir: "{{ slurm_source_build_dir }}/{{ slurm_version }}/{{ ansible_distribution }}/{{ ansible_distribution_major_version }}/{{ slurm_extracted_dir }}/contribs/pam_slurm_adopt"
+    when: 
+      - slurm_info_out.rc != 0 
+      - 'slurm_version | string not in slurm_info_out.stdout'
+
+  become: true
+
+...

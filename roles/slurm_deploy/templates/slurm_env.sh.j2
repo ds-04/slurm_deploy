@@ -1,0 +1,10 @@
+#!/bin/sh
+
+export slurm_version={{ slurm_version }}
+export full_slurm_path={{ slurm_compile_prefix_dir }}
+
+export PATH=$PATH:$full_slurm_path/bin:$full_slurm_path/sbin
+export MANPATH=${MANPATH:-`manpath -g`}:$full_slurm_path/share/man
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$full_slurm_path/lib
+export CPATH=$CPATH:$full_slurm_path/include/slurm
+

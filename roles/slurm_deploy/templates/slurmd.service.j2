@@ -1,0 +1,18 @@
+# Ansible managed by slurm_deploy
+# configuration for slurmd-{{ slurm_version }}
+#
+
+[Unit]
+Description=Slurmd
+After=munge.service network.target
+ConditionPathExists={{ slurm_prefix }}/{{ slurm_version }}/etc/slurm.conf
+
+[Service]
+Type=forking
+EnvironmentFile=-/etc/sysconfig/slurmd
+ExecStart={{ slurm_prefix }}/{{ slurm_version }}/{{ ansible_distribution }}/{{ ansible_facts['distribution_major_version'] }}/sbin/slurmd
+ExecReload=/bin/kill -HUP $MAINPID
+PIDFile=/var/run/slurmd.pid
+
+[Install]
+WantedBy=multi-user.target

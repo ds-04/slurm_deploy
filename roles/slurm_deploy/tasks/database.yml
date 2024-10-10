@@ -1,0 +1,82 @@
+---
+- block:
+
+### FIX WITH ENHANCEMENT TO VAGRANTFILE
+
+#  - name: Create /database/var/lib/mysql
+#    ansible.builtin.file:
+#      path: /database/var/lib/mysql
+#      recurse: true
+#      state: directory
+
+
+#  - name: Mount /dev/sdb to /database/
+#    ansible.posix.mount:
+#      path: /database/
+#      src: /dev/sdb
+#      state: mounted
+#      fstype: ext4
+
+## Use symlink instead
+##  - name: Bind mount /var/lib/mysql to /database/var/lib/mysql
+##    ansible.posix.mount:
+##      path: /database/var/lib/mysql
+##      src: /var/lib/mysql
+##      opts: bind
+##      state: mounted
+##      fstype: none
+
+#  - name: Create a symbolic link /var/lib/mysql to /database/var/lib/mysql
+#    ansible.builtin.file:
+#      src: /database/var/lib/mysql
+#      dest: /var/lib/mysql
+#      owner: mysql
+#      group: mysql
+#      state: link
+#      force: true
+
+#  - name: Enforce mysql:mysql on /database/var/lib/mysql
+#    ansible.builtin.file:
+#      path: /database/var/lib/mysql
+#      recurse: false
+#      state: directory
+#      owner: mysql
+#      group: mysql
+
+  - name: Install mariabdb deps
+    ansible.builtin.dnf:
+      state: present
+      name: "{{ item }}"
+    loop: "{{ mariadb_deps }}"
+    when: 
+      - database_type == 'mariadb'
+      - database_type != 'mysql'
+
+  - name: Install mysql deps
+    ansible.builtin.dnf:
+      state: present
+      name: "{{ item }}"
+    loop: "{{ mysql_deps }}"
+    when: 
+      - database_type == 'mysql'
+      - database_type != 'mariadb'
+
+  - name: Template /etc/my.cnf
+    ansible.builtin.template:
+      src: my.cnf.j2
+      dest: /etc/my.cnf
+      backup: true
+      mode: '0644'
+      owner: mysql
+      group: mysql
+
+  - name: Ensure MARIADB/MYSQLD is running
+    ansible.builtin.systemd:
+      name: "mariadb.service"
+      #name: "mysqld.service"
+      state: started
+      enabled: true
+      daemon_reload: true
+
+  become: true
+...

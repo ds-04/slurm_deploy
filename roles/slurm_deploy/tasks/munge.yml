@@ -1,0 +1,31 @@
+---
+- block:
+
+  - name: Install munge
+    ansible.builtin.package:
+      name: "{{ item }}"
+      state: present
+    loop: "{{ munge_deps }}"
+
+  - name: Generate munge key if it does not exist
+    ansible.builtin.command: /usr/sbin/create-munge-key
+    args:
+      creates: /etc/munge/munge.key
+    register: mungekey
+
+  - name: /etc/munge/munge.key mode and ownership
+    ansible.builtin.file:
+      path: /etc/munge/munge.key
+      mode: 0400
+      owner: munge
+      group: munge
+
+  - name: Ensure Munge is running
+    ansible.builtin.systemd:
+      name: "munge.service"
+      state: started
+      enabled: true
+      daemon_reload: true
+
+  become: true
+...

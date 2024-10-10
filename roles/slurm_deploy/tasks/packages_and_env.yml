@@ -1,0 +1,56 @@
+---
+
+- block:
+
+  - name: Put SELinux in permissive mode, logging actions that would be blocked.
+    ansible.posix.selinux:
+      policy: targeted
+      state: permissive
+
+  - name: dnf config-manager --set-enabled crb
+    command: dnf config-manager --set-enabled crb
+    when: ansible_distribution_major_version|int == 9
+
+  - name: dnf config-manager --set-enabled powertools
+    command: dnf config-manager --set-enabled powertools
+    when: ansible_distribution_major_version|int == 8
+
+  - name: dnf install s-nail (mail)
+    ansible.builtin.dnf:
+      name: s-nail
+      state: installed
+    when:
+      - ansible_distribution_major_version|int == 9
+      - ansible_distribution == 'AlmaLinux'
+
+  - name: Install general deps
+    ansible.builtin.package:
+      state: present
+      name: "{{ item }}"
+    loop: "{{ general_deps }}"
+
+  - name: Install pmix deps
+    ansible.builtin.package:
+      state: present
+      name: "{{ item }}"
+    loop: "{{ pmix_deps }}"
+    when: install_pmix
+
+  - name: Install slurm deps
+    ansible.builtin.package:
+      state: present
+      name: "{{ item }}"
+    loop: "{{ slurm_deps }}"
+
+  - name: "Create slurm_source_build_dir - {{ slurm_source_build_dir }}"
+    ansible.builtin.file:
+      path: "{{ slurm_source_build_dir }}"
+      state: directory
+      recurse: true
+      owner: root
+      group: root
+      mode: '0700'
+
+  become: true
+
+...
