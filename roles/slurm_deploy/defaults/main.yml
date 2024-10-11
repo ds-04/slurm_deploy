@@ -40,7 +40,7 @@ slurm_archive_dir: "{{slurm_prefix}}/archive"
 database_type: 'mariadb'
 #database_type: 'mysql'
 
-#***** ADVISE REPLACE WITH ENCRYTED IN ../vars/ *****#
+#***** ADVISE REPLACE WITH ENCRYPTED IN ../vars/ *****#
 db_root_password: 'password'
 slurmdbd_password: 'password'
 
