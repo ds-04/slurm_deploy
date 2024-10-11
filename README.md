@@ -12,10 +12,12 @@ included here:
 - vagrant file for testing and inventory
 - default master with client on same host
 - modify vagrantfile if you wish to have a seperate client machine
+- slurm_deploy ansible role to deploy against vagrant or other target hosts
 
 requirements:
 - ansible
 - ansible.posix module (ansible-galaxy collection install ansible.posix)
+- vagrant (if using it for testing)
 
 TODO:
 - general improvements
