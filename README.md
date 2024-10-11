@@ -8,16 +8,16 @@ other RHEL family (=> 8) distributions could be made to work without much furthe
 
 <b>USE AT OWN RISK</b>
 
-included here:
-- vagrant file for testing and inventory
+Included here:
+- ``Vagrantfile`` for testing and inventory
 - default master with client on same host
-- modify vagrantfile if you wish to have a seperate client machine
+- modify ``Vagrantfile`` if you wish to have a seperate client machine
 - slurm_deploy ansible role to deploy against vagrant or other target hosts
 
-requirements:
-- ansible
-- ansible.posix module (ansible-galaxy collection install ansible.posix)
-- vagrant (if using it for testing)
+Requirements:
+- ``ansible``
+- ``ansible.posix`` module (```ansible-galaxy collection install ansible.posix```)
+- ``vagrant`` (if using it for testing)
 
 TODO:
 - general improvements
