@@ -19,6 +19,7 @@
       mode: 0400
       owner: munge
       group: munge
+    ignore_errors: "{{ ansible_check_mode }}"
 
   - name: Ensure Munge is running
     ansible.builtin.systemd:
@@ -26,6 +27,7 @@
       state: started
       enabled: true
       daemon_reload: true
+    ignore_errors: "{{ ansible_check_mode }}"
 
   become: true
 ...
