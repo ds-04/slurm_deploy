@@ -8,6 +8,10 @@ other distributions could be made to work
 
 USE AT OWN RISK
 
+included here:
+- vagrant file for testing and inventory
+- default master with client on same host
+- modify vagrantfile if you wish to have a seperate client machine
 
 requirements:
 - ansible
