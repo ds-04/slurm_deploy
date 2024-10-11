@@ -50,7 +50,7 @@
     loop: "{{ mariadb_deps }}"
     when: 
       - database_type == 'mariadb'
-      - database_type != 'mysql'
+      - database_type is defined
 
   - name: Install mysql deps
     ansible.builtin.dnf:
@@ -59,7 +59,7 @@
     loop: "{{ mysql_deps }}"
     when: 
       - database_type == 'mysql'
-      - database_type != 'mariadb'
+      - database_type is defined
 
   - name: Template /etc/my.cnf
     ansible.builtin.template:
@@ -77,6 +77,7 @@
       state: started
       enabled: true
       daemon_reload: true
+    ignore_errors: "{{ ansible_check_mode }}"
 
   become: true
 ...
