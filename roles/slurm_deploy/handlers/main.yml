@@ -5,6 +5,7 @@
     state: restarted
     enabled: true
   become: true
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Restart slurmdbd
   ansible.builtin.systemd:
@@ -12,6 +13,7 @@
     state: restarted
     enabled: true
   become: true
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Restart slurmd
   ansible.builtin.systemd:
@@ -19,6 +21,7 @@
     state: restarted
     enabled: true
   become: true
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Reconfigure slurm
   ansible.builtin.command: "{{ slurm_prefix }}/{{ slurm_version }}/sbin/scontrol reconfigure"
@@ -31,4 +34,5 @@
     enabled: true
     daemon_reload: true
   become: true
-...
+  ignore_errors: "{{ ansible_check_mode }}"
+  ...
