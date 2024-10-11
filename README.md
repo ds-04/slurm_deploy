@@ -1,12 +1,12 @@
 <h1>slurm_deploy</h1>
 
-<b>Deploy a slurm master server from source</b> on common linux distributions...
+<b>Deploy a test slurm master server and client from source</b> on common linux distributions either in provided Vagrant environ or your own...
 
 CURRENTLY TESTED WITH ALMALINUX 9 
 
-other distributions could be made to work
+other RHEL family (=> 8) distributions could be made to work without much further work, but this is yet to be done
 
-USE AT OWN RISK
+<b>USE AT OWN RISK</b>
 
 included here:
 - vagrant file for testing and inventory
