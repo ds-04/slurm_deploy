@@ -8,6 +8,10 @@ other RHEL family (=> 8) distributions could be made to work without much furthe
 
 <b>USE AT OWN RISK</b>
 
+
+<b>Only same-host master+client works at the moment. This will be changed in due course.</b>
+
+
 Included here:
 - ``Vagrantfile`` for testing and inventory
 - default master with client on same host
