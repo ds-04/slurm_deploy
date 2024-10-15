@@ -1,4 +1,6 @@
 ---
+# by default install the database packages for slurmdbd and my.cnf, set to false if you want something else, e.g. a multi-instance db perhaps
+install_database: true
 
 #need to improve
 cuda_rpm:
