@@ -2,6 +2,7 @@
 
 - ansible.builtin.include_tasks: packages_and_env.yml
   when:
+    - "'slurm_master' in group_names"
     - ansible_os_family == "RedHat"
     - ansible_distribution_major_version|int >= 8
   tags:
@@ -9,6 +10,7 @@
 
 - ansible.builtin.include_tasks: cuda.yml
   when:
+    - "'slurm_master' in group_names"
     - ansible_os_family == "RedHat"
     - ansible_distribution_major_version|int >= 8
   tags:
@@ -16,6 +18,7 @@
 
 - ansible.builtin.include_tasks: pmix.yml
   when:
+    - "'slurm_master' in group_names"
     - ansible_os_family == "RedHat"
     - ansible_distribution_major_version|int >= 8
     - install_pmix
@@ -25,6 +28,7 @@
 
 - ansible.builtin.include_tasks: munge.yml
   when:
+    - "'slurm_master' in group_names"
     - ansible_os_family == "RedHat"
     - ansible_distribution_major_version|int >= 8
   tags:
@@ -32,6 +36,7 @@
 
 - ansible.builtin.include_tasks: database.yml
   when:
+    - "'slurm_master' in group_names"
     - ansible_os_family == "RedHat"
     - ansible_distribution_major_version|int >= 8
     - install_database is defined
@@ -41,6 +46,7 @@
 
 - ansible.builtin.include_tasks: slurm_master.yml
   when:
+    - "'slurm_master' in group_names"  
     - ansible_os_family == "RedHat"
     - ansible_distribution_major_version|int >= 8
   tags:
@@ -48,6 +54,7 @@
 
 - ansible.builtin.include_tasks: slurm_post_install.yml
   when:
+    - "'slurm_master' in group_names"
     - ansible_os_family == "RedHat"
     - ansible_distribution_major_version|int >= 8
   tags:
