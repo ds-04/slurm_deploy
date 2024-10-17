@@ -111,15 +111,6 @@
       mode: 0644
     notify: Restart slurmctld
 
-  - name: Template slurmd systemd file
-    ansible.builtin.template:
-      src: "slurmd.service.j2"
-      dest: /usr/lib/systemd/system/slurmd.service
-      owner: slurm
-      group: slurm
-      mode: 0644
-    notify: Restart slurmd
-
   - name: Ensure slurmdbd daemon running
     ansible.builtin.systemd:
       name: "slurmdbd.service"
@@ -140,6 +131,16 @@
       daemon_reload: true
     ignore_errors: "{{ ansible_check_mode }}"
 
+  - name: Template slurmd systemd file
+    ansible.builtin.template:
+      src: "slurmd.service.j2"
+      dest: /usr/lib/systemd/system/slurmd.service
+      owner: slurm
+      group: slurm
+      mode: 0644
+    notify: Restart slurmd
+    when: slurm_master_is_also_client
+
   - name: Ensure slurmd is running
     ansible.builtin.systemd:
       name: "slurmd.service"
@@ -147,7 +148,8 @@
       enabled: true
       daemon_reload: true
     ignore_errors: "{{ ansible_check_mode }}"
-    
+    when: slurm_master_is_also_client
+
   # LOGROTATE
   - name: install logrotate
     ansible.builtin.package:
