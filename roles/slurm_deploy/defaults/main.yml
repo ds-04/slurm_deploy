@@ -38,6 +38,9 @@ slurm_spool_dir: "/var/spool/slurmd"
 slurm_log_dir: "/var/log/slurm"
 slurm_archive_dir: "{{slurm_prefix}}/archive"
 
+# should we run a slurmd (client) on master host, useful for testing, but not production
+slurm_master_is_also_client: true
+
 #DATABASE
 database_type: 'mariadb'
 #database_type: 'mysql'
