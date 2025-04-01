@@ -1,0 +1,5 @@
+# not a production ready config, dev/testing config
+{% for server in groups['slurm_client'] %}
+{{ slurm_compile_prefix_dir }} {{hostvars[server]['ansible_facts']['fqdn']}}(ro,async,no_subtree_check,fsid=1)
+{{ slurm_prefix }}/{{ slurm_version }}/etc {{hostvars[server]['ansible_facts']['fqdn']}}(ro,async,no_subtree_check,fsid=2)
+{% endfor %}

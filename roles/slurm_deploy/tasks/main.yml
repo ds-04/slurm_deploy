@@ -60,4 +60,28 @@
   tags:
     - slurm_post_install
 
+- ansible.builtin.include_tasks: slurm_client.yml
+  when:
+    - "'slurm_client' in group_names"
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 8
+  tags:
+    - slurm_client
+
+- ansible.builtin.include_tasks: slurm_client_munge.yml
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 8
+    - "({{ groups['slurm_client'] | length }} > 0)"
+  tags:
+    - slurm_client_munge
+
+- ansible.builtin.include_tasks: slurm_nfs.yml
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 8
+    - "({{ groups['slurm_client'] | length }} > 0)"
+  tags:
+    - nfs
+
 ...

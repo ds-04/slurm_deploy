@@ -35,4 +35,13 @@
     daemon_reload: true
   become: true
   ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart nfs-server
+  ansible.builtin.systemd:
+    name: nfs-server.service
+    state: restarted
+    enabled: true
+    daemon_reload: true
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
 ...

@@ -1,0 +1,54 @@
+---
+- name: "install nfs-utils"
+  ansible.builtin.dnf:
+    name: nfs-utils
+    state: present
+  become: true
+
+- name: Template exports file
+  ansible.builtin.template:
+    src: exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: 0644
+ #notify: Restart nfs-server
+  when: "'slurm_master' in group_names"
+  become: true
+
+- name: Restart nfs-server
+  ansible.builtin.systemd:
+    name: nfs-server.service
+    state: restarted
+    enabled: true
+    daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: "'slurm_master' in group_names"
+  become: true
+
+- name: "Client mount for {{ slurm_compile_prefix_dir }}"
+  ansible.posix.mount:
+    name: "{{ slurm_compile_prefix_dir }}"
+    src: "{{ hostvars[item]['ansible_fqdn'] }}:{{ slurm_compile_prefix_dir }}"
+    opts: ro,async
+    state: mounted
+    fstype: nfs
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: inventory_hostname in groups["slurm_client"]
+  become: true
+  loop: "{{ groups['slurm_master'] }}" #loop the 1x host within master group
+
+- name: "Client mount for {{ slurm_prefix }}/{{ slurm_version }}/etc"
+  ansible.posix.mount:
+    name: "{{ slurm_prefix }}/{{ slurm_version }}/etc"
+    src: "{{ hostvars[item]['ansible_fqdn'] }}:{{ slurm_prefix }}/{{ slurm_version }}/etc"
+    opts: ro,async
+    state: mounted
+    fstype: nfs
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: inventory_hostname in groups["slurm_client"]
+  become: true
+  loop: "{{ groups['slurm_master'] }}" #loop the 1x host within master group
+  notify: Restart slurmd
+
+...
