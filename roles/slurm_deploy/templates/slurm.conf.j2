@@ -59,6 +59,14 @@ SlurmdLogFile=/var/log/slurm/slurmd.log
 #DebugFlags=
 #
 #
-# COMPUTE NODES
+# Node definitions
+{% if (groups['slurm_client'] | length) > 0 %}
+{% for server in groups['all_slurm_hosts'] %}
+NodeName={{ hostvars[server].inventory_hostname_short }} CPUs=1 State=UNKNOWN ThreadsPerCore=1 RealMemory=1000
+{% endfor %}
+{% else %}
 NodeName=localhost CPUs=1 State=UNKNOWN ThreadsPerCore=1 RealMemory=1000
+{% endif %}
+
+# Partitions
 PartitionName=debug Nodes=ALL Default=YES MaxTime=INFINITE State=UP

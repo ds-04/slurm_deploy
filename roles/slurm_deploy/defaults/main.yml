@@ -19,7 +19,7 @@ pmix_tar_url: "https://github.com/openpmix/openpmix/releases/download/v{{pmix_ve
 
 #SLURM
 
-slurm_version: '23.02.7'
+slurm_version: '24.05.7'
 slurm_shasum: ''
 slurm_tar_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
 slurm_source_build_dir: /opt/ansible_slurm_deploy_software-build/slurm/source-build  #where source will be extracted to

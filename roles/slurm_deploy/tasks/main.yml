@@ -1,4 +1,10 @@
 ---
+- ansible.builtin.include_tasks: hostname.yml
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 8
+  tags:
+    - hostname
 
 - ansible.builtin.include_tasks: packages_and_env.yml
   when:
@@ -60,6 +66,14 @@
   tags:
     - slurm_post_install
 
+- ansible.builtin.include_tasks: firewall.yml
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 8
+    - (groups['slurm_client'] | length) > 0
+  tags:
+    - firewall
+
 - ansible.builtin.include_tasks: slurm_client.yml
   when:
     - "'slurm_client' in group_names"
@@ -72,7 +86,7 @@
   when:
     - ansible_os_family == "RedHat"
     - ansible_distribution_major_version|int >= 8
-    - "({{ groups['slurm_client'] | length }} > 0)"
+    - (groups['slurm_client'] | length) > 0
   tags:
     - slurm_client_munge
 
@@ -80,7 +94,7 @@
   when:
     - ansible_os_family == "RedHat"
     - ansible_distribution_major_version|int >= 8
-    - "({{ groups['slurm_client'] | length }} > 0)"
+    - (groups['slurm_client'] | length) > 0
   tags:
     - nfs
 

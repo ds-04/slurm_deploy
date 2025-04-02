@@ -10,14 +10,14 @@
 
   - name: "Set fact on client for base64decoded /etc/munge/munge.key"
     ansible.builtin.set_fact:
-      munge_key_content: "{{ hostvars[item]['slurped_munge_key']['content'] | b64decode }}"
+      munge_key_content: "{{ hostvars[item]['slurped_munge_key']['content'] }}"
     when: inventory_hostname in groups["slurm_client"]
     loop: "{{ groups['slurm_master'] }}" #loop the 1x host within master group
     ignore_errors: "{{ ansible_check_mode }}"
 
   #This is always going to write... due to command usage
-  - name: "Write copy of slurped_munge_key file using the slurped content - /etc/munge/munge.key"
-    ansible.builtin.shell: "echo \"{{ slurped_munge_key }}\" > /etc/munge/munge.key"
+  - name: "Write copy of slurped_munge_key file using the munge_key_content - /etc/munge/munge.key"
+    ansible.builtin.shell: "echo \"{{ munge_key_content }}\" > /etc/munge/munge.key"
     when:
       - inventory_hostname in groups["slurm_client"]
     ignore_errors: "{{ ansible_check_mode }}"

@@ -1,0 +1,47 @@
+---
+
+- name: Set fact for client ips
+  ansible.builtin.set_fact:
+    client_ips_fact: "{{ groups.slurm_client | map('extract', hostvars, 'ansible_all_ipv4_addresses') | list }}"
+  run_once: true
+
+- name: Debug - show ips
+  ansible.builtin.debug:
+    msg: "{{ item }}"
+  loop: "{{ client_ips_fact | flatten }}"
+  run_once: true
+
+- name: Firewall - Enable nfs to client from server
+  ansible.posix.firewalld:
+    rich_rule: rule family=ipv4 source address={{item}}/32 service name="nfs" accept
+    state: enabled
+    permanent: true
+    immediate: true
+    offline: true
+  when: inventory_hostname in groups["slurm_master"]
+  become: true
+  loop: "{{ client_ips_fact | flatten }}"
+
+- name: "Firewall - Enable slurm ports 6817-6819 access to client from server"
+  ansible.posix.firewalld:
+    rich_rule: rule family=ipv4 source address={{item}}/32 port port="6817-6819" protocol="tcp" accept
+    state: enabled
+    permanent: true
+    immediate: true
+    offline: true
+  when: inventory_hostname in groups["slurm_master"]
+  become: true
+  loop: "{{ client_ips_fact | flatten }}"
+
+- name: Firewall - Enable slurmd from client to server
+  ansible.posix.firewalld:
+    rich_rule: rule family=ipv4 source address="{{hostvars[item]['ansible_default_ipv4']['address']}}"/32 port port="6818" protocol="tcp" accept
+    state: enabled
+    permanent: true
+    immediate: true
+    offline: true
+  when: inventory_hostname in groups["slurm_client"]
+  become: true
+  loop: "{{ groups['slurm_master'] }}" #loop the 1x host within master group
+
+...

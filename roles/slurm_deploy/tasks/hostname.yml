@@ -1,0 +1,16 @@
+---
+- name: ensure hostname aligned with inventory
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+  become: true
+
+- name: Add IP address of all hosts
+  ansible.builtin.lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ item }}$'
+    line: "{{ hostvars[item].ansible_host }} {{ item }} {{ hostvars[item].inventory_hostname_short }}"
+    state: present
+  when: hostvars[item].ansible_host is defined
+  with_items: "{{ groups.all }}"
+  become: true
+...
